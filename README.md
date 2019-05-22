@@ -1,6 +1,2 @@
-BlenderAddons
-=============
-
-This repository stores addons for Blender. 
-I am mainly focusing on precision modeling tools and addons that can help you
-prepare mechanical and architectural models quicker.
+Repository was forked from here: https://github.com/komi3D/BlenderAddons
+Edge roundifier was updated for blender 2.8
