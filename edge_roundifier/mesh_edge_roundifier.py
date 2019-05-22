@@ -20,9 +20,9 @@
 bl_info = {
     "name": "Edge Roundifier",
     "category": "Mesh",
-    'author': 'Piotr Komisarczyk (komi3D), PKHG',
-    'version': (1, 0, 0),
-    'blender': (2, 7, 3),
+    'author': 'Piotr Komisarczyk (komi3D), PKHG, ported to 2.8 by Titus',
+    'version': (1, 0, 1),
+    'blender': (2, 80, 0),
     'location': 'SPACE > Edge Roundifier or CTRL-E > Edge Roundifier or Tools > Addons > Edge Roundifier',
     'description': 'Mesh editing script allowing edge rounding',
     'wiki_url': '',
@@ -82,17 +82,18 @@ class EdgeWorksPanel(bpy.types.Panel):
     bl_label = "Edge Works"
     bl_idname = "EdgeWorksPanel"
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = 'UI'
     bl_category = "Addons"
     
     @classmethod
     def poll(cls, context):
         return (context.object is not None and context.object.type == "MESH")
     
-    def draw(self,context):
-        row = self.layout.row(True)
-        col = row.column(True)
-        col.operator(EdgeRoundifier.bl_idname, text = "Edge Roundifier")
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row(align=True)
+        col = row.column(align=True)
+        col.operator(EdgeRoundifier.bl_idname, text="Edge Roundifier")
 
 
 ####################### Geometry and math calcualtion methods #####################
@@ -284,57 +285,57 @@ class EdgeRoundifier(bpy.types.Operator):
     
     obj = None
 
-    edgeScaleFactor = bpy.props.FloatProperty(name = '', default = 1.0, min = 0.00001, max = 100000.0, step = 0.5, precision = 5)
-    r = bpy.props.FloatProperty(name = '', default = 1, min = 0.00001, max = 1000.0, step = 0.1, precision = 3)
-    a = bpy.props.FloatProperty(name = '', default = 180.0, min = 0.1, max = 180.0, step = 0.5, precision = 1)
-    n = bpy.props.IntProperty(name = '', default = 4, min = 1, max = 100, step = 1)
-    flip = bpy.props.BoolProperty(name = 'Flip', default = False)
+    edgeScaleFactor : bpy.props.FloatProperty(name = '', default = 1.0, min = 0.00001, max = 100000.0, step = 0.5, precision = 5)
+    r : bpy.props.FloatProperty(name = '', default = 1, min = 0.00001, max = 1000.0, step = 0.1, precision = 3)
+    a : bpy.props.FloatProperty(name = '', default = 180.0, min = 0.1, max = 180.0, step = 0.5, precision = 1)
+    n : bpy.props.IntProperty(name = '', default = 4, min = 1, max = 100, step = 1)
+    flip : bpy.props.BoolProperty(name = 'Flip', default = False)
     
-    invertAngle = bpy.props.BoolProperty(name = 'Invert', default = False)
-    fullCircles = bpy.props.BoolProperty(name = 'Circles', default = False)
-    bothSides = bpy.props.BoolProperty(name = 'Both sides', default = False)
+    invertAngle : bpy.props.BoolProperty(name = 'Invert', default = False)
+    fullCircles : bpy.props.BoolProperty(name = 'Circles', default = False)
+    bothSides : bpy.props.BoolProperty(name = 'Both sides', default = False)
     
-    drawArcCenters = bpy.props.BoolProperty(name = 'Centers', default = False)
-    removeEdges = bpy.props.BoolProperty(name = 'Edges', default = False)
-    removeScaledEdges = bpy.props.BoolProperty(name = 'Scaled edges', default = False)
+    drawArcCenters : bpy.props.BoolProperty(name = 'Centers', default = False)
+    removeEdges : bpy.props.BoolProperty(name = 'Edges', default = False)
+    removeScaledEdges : bpy.props.BoolProperty(name = 'Scaled edges', default = False)
     
-    connectArcWithEdge = bpy.props.BoolProperty(name = 'Arc - Edge', default = False)
-    connectArcs = bpy.props.BoolProperty(name = 'Arcs', default = False)
-    connectScaledAndBase = bpy.props.BoolProperty(name = 'Scaled - Base Edge', default = False)
-    connectArcsFlip = bpy.props.BoolProperty(name = 'Flip Arcs', default = False)
-    connectArcWithEdgeFlip = bpy.props.BoolProperty(name = 'Flip Arc - Edge', default = False)
+    connectArcWithEdge : bpy.props.BoolProperty(name = 'Arc - Edge', default = False)
+    connectArcs : bpy.props.BoolProperty(name = 'Arcs', default = False)
+    connectScaledAndBase : bpy.props.BoolProperty(name = 'Scaled - Base Edge', default = False)
+    connectArcsFlip : bpy.props.BoolProperty(name = 'Flip Arcs', default = False)
+    connectArcWithEdgeFlip : bpy.props.BoolProperty(name = 'Flip Arc - Edge', default = False)
     
     
-    axisAngle = bpy.props.FloatProperty(name = '', default = 0.0, min = -180.0, max = 180.0, step = 0.5, precision = 1)
-    edgeAngle = bpy.props.FloatProperty(name = '', default = 0.0, min = -180.0, max = 180.0, step = 0.5, precision = 1)
-    offset = bpy.props.FloatProperty(name = '', default = 0.0, min = -1000000.0, max = 1000000.0, step = 0.1, precision = 5)
-    offset2 = bpy.props.FloatProperty(name = '', default = 0.0, min = -1000000.0, max = 1000000.0, step = 0.1, precision = 5)
-    ellipticFactor = bpy.props.FloatProperty(name = '', default = 0.0, min = -1000000.0, max = 1000000.0, step = 0.1, precision = 5)
+    axisAngle : bpy.props.FloatProperty(name = '', default = 0.0, min = -180.0, max = 180.0, step = 0.5, precision = 1)
+    edgeAngle : bpy.props.FloatProperty(name = '', default = 0.0, min = -180.0, max = 180.0, step = 0.5, precision = 1)
+    offset : bpy.props.FloatProperty(name = '', default = 0.0, min = -1000000.0, max = 1000000.0, step = 0.1, precision = 5)
+    offset2 : bpy.props.FloatProperty(name = '', default = 0.0, min = -1000000.0, max = 1000000.0, step = 0.1, precision = 5)
+    ellipticFactor : bpy.props.FloatProperty(name = '', default = 0.0, min = -1000000.0, max = 1000000.0, step = 0.1, precision = 5)
     
     
     workModeItems = [("Normal", "Normal", ""), ("Reset", "Reset", "")]
-    workMode = bpy.props.EnumProperty(
+    workMode : bpy.props.EnumProperty(
         items = workModeItems,
         name = '',
         default = 'Normal',
         description = "Edge Roundifier work mode")
     
     entryModeItems = [("Radius", "Radius", ""), ("Angle", "Angle", "")]
-    entryMode = bpy.props.EnumProperty(
+    entryMode : bpy.props.EnumProperty(
         items = entryModeItems,
         name = '',
         default = 'Angle',
         description = "Edge Roundifier entry mode")
     
     rotateCenterItems = [("Spin", "Spin", ""), ("V1", "V1", ""), ("Edge", "Edge", ""), ("V2", "V2", "")]
-    rotateCenter = bpy.props.EnumProperty(
+    rotateCenter : bpy.props.EnumProperty(
         items = rotateCenterItems,
         name = '',
         default = 'Edge',
         description = "Rotate center for spin axis rotate")
     
     arcModeItems = [("FullEdgeArc","Full","Full"),('HalfEdgeArc',"Half","Half")]
-    arcMode = bpy.props.EnumProperty(
+    arcMode : bpy.props.EnumProperty(
         items = arcModeItems,
         name = '',
         default = 'FullEdgeArc',
@@ -345,7 +346,7 @@ class EdgeRoundifier(bpy.types.Operator):
                     ('90', "90", "QuadCircle"), ('72', "72", "PentagonCircle"), ('60', "60", "HexagonCircle"), 
                     ('45', "45", "OctagonCircle"), ('30', "30", "12-gonCircle")]
 
-    angleEnum = bpy.props.EnumProperty(
+    angleEnum : bpy.props.EnumProperty(
         items = angleItems,
         name = '',
         default = '180',
@@ -353,21 +354,21 @@ class EdgeRoundifier(bpy.types.Operator):
 
     refItems = [('ORG', "Origin", "Use Origin Location"), ('CUR', "3D Cursor", "Use 3DCursor Location")
                 , ('EDG', "Edge", "Use Individual Edge Reference")]
-    referenceLocation = bpy.props.EnumProperty(
+    referenceLocation : bpy.props.EnumProperty(
         items = refItems,
         name = '',
         default = 'ORG',
         description = "Reference location used by Edge Roundifier to calculate initial centers of drawn arcs")
 
     planeItems = [(XY, XY, "XY Plane (Z=0)"), (YZ, YZ, "YZ Plane (X=0)"), (XZ, XZ, "XZ Plane (Y=0)")]
-    planeEnum = bpy.props.EnumProperty(
+    planeEnum : bpy.props.EnumProperty(
         items = planeItems,
         name = '',
         default = 'XY',
         description = "Plane used by Edge Roundifier to calculate spin plane of drawn arcs")
 
     edgeScaleCenterItems = [('V1', "V1", "v1"), ('CENTER', "Center", "cent"), ('V2', "V2", "v2")]
-    edgeScaleCenterEnum = bpy.props.EnumProperty(
+    edgeScaleCenterEnum : bpy.props.EnumProperty(
         items = edgeScaleCenterItems,
         name = 'edge scale center',
         default = 'CENTER',
@@ -380,7 +381,7 @@ class EdgeRoundifier(bpy.types.Operator):
         bpy.ops.object.mode_set(mode = 'OBJECT')
         bpy.ops.object.mode_set(mode = 'EDIT')
 
-        mesh = context.scene.objects.active.data
+        mesh = context.view_layer.objects.active.data
         bm = bmesh.new()
         bm.from_mesh(mesh)
         
@@ -472,30 +473,30 @@ class EdgeRoundifier(bpy.types.Operator):
 
     def addParameterToUI(self, layout, alignment, percent, label, property):
         row = layout.row (align = alignment)
-        split = row.split(percentage=percent)
+        split = row.split(factor=percent, align=False)
         col = split.column()
-        col.label(label)
+        col.label(text=label)
         col2 = split.column()
         row = col2.row(align = alignment)
         row.prop(self, property)
         
     def addTwoCheckboxesToUI(self, layout, alignment, label, property1, property2):
         row = layout.row (align = alignment)
-        row.label(label)
+        row.label(text=label)
         row.prop(self, property1)
         row.prop(self, property2)
         
     def addCheckboxToUI(self, layout, alignment, label, property1):
         row = layout.row (align = alignment)
-        row.label(label)
+        row.label(text=label)
         row.prop(self, property1)
-        row.label('')
+        row.label(text='')
         
     def addEnumParameterToUI(self, layout, alignment, percent, label, property):
         row = layout.row (align = alignment)
-        split = row.split(percentage=percent)
+        split = row.split(factor=percent, align=False)
         col = split.column()
-        col.label(label)
+        col.label(text=label)
         col2 = split.column()
         row = col2.row(align = alignment)
         row.prop(self, property, expand = True, text = "a")
@@ -507,7 +508,7 @@ class EdgeRoundifier(bpy.types.Operator):
         
         self.resetValues(parameters["workMode"])
         
-        self.obj = context.scene.objects.active
+        self.obj = context.view_layer.objects.active
         scaledEdges = self.scaleDuplicatedEdges(bm, edges, parameters)
 
         if len(scaledEdges) > 0:
@@ -522,9 +523,9 @@ class EdgeRoundifier(bpy.types.Operator):
             debugPrint("No edges selected!")
         
         if parameters["removeEdges"]:
-            bmesh.ops.delete(bm, geom = edges, context = 2)
+            bmesh.ops.delete(bm, geom = edges, context = 'FACES_ONLY')
         if parameters["removeScaledEdges"] and self.edgeScaleFactor != 1.0:    
-            bmesh.ops.delete(bm, geom = scaledEdges, context = 2)
+            bmesh.ops.delete(bm, geom = scaledEdges, context = 'FACES_ONLY')
             
         bpy.ops.object.mode_set(mode = 'OBJECT')
         bm.to_mesh(mesh)
@@ -662,15 +663,22 @@ class EdgeRoundifier(bpy.types.Operator):
     def arc_rotator(self, arcVerts, extra_rotation, parameters):
         bpy.ops.object.mode_set(mode = 'OBJECT')
         old_location = self.obj.location.copy()
-        bpy.ops.transform.translate(value = - old_location, constraint_axis=(False, False, False), constraint_orientation='GLOBAL', mirror=False, proportional='DISABLED', proportional_edit_falloff='SMOOTH', proportional_size=1)
+        bpy.ops.transform.translate(value = - old_location,
+                                    constraint_axis=(False, False, False),
+                                    orient_matrix_type='GLOBAL',
+                                    mirror=False,
+                                    use_proportional_edit=False,
+                                    proportional_edit_falloff='SMOOTH',
+                                    proportional_size=1
+                                    )
         bpy.ops.object.mode_set(mode = 'EDIT')
         adjust_matrix = self.obj.matrix_parent_inverse
         bm = bmesh.from_edit_mesh(self.obj.data)
         lastVert = len(arcVerts) - 1
         if parameters["drawArcCenters"]:
             lastVert = lastVert - 1 #center gets added as last vert of arc
-        v0_old = adjust_matrix  *  arcVerts[0].co.copy()
-        v1_old = adjust_matrix * arcVerts[lastVert].co.copy()
+        v0_old = adjust_matrix  @  arcVerts[0].co.copy()
+        v1_old = adjust_matrix @ arcVerts[lastVert].co.copy()
 
         #PKHG>INFO move if necessary v0 to origin such that the axis gos through origin and v1
         if v0_old != Vector((0,0,0)):
@@ -683,7 +691,7 @@ class EdgeRoundifier(bpy.types.Operator):
         a_mat = Quaternion(axis, radians(extra_rotation)).normalized().to_matrix()
     
         for ele in arcVerts:
-            ele.co = a_mat * ele.co
+            ele.co = a_mat @ ele.co
     
         #PKHG>INFO move back if needed
         if v0_old != Vector((0,0,0)):
@@ -691,8 +699,15 @@ class EdgeRoundifier(bpy.types.Operator):
                 arcVerts[i].co += + v0_old   
     
         bpy.ops.object.mode_set(mode = 'OBJECT')
-        #PKHG>INFO move origin object back print("old location = " , old_location)
-        bpy.ops.transform.translate(value = old_location, constraint_axis=(False, False, False), constraint_orientation='GLOBAL', mirror=False, proportional='DISABLED', proportional_edit_falloff='SMOOTH', proportional_size=1)
+        #PKHG>INFO move origin object back print("old location = " , old_location)        
+        bpy.ops.transform.translate(value = old_location,
+                                    constraint_axis=(False, False, False),
+                                    orient_matrix_type='GLOBAL',
+                                    mirror=False,
+                                    use_proportional_edit=False,
+                                    proportional_edit_falloff='SMOOTH',
+                                    proportional_size=1
+                                    )
         bpy.ops.object.mode_set(mode = 'EDIT')
     
     def makeElliptic(self, bm, mesh, arcVertices, parameters):
@@ -904,7 +919,7 @@ class EdgeRoundifier(bpy.types.Operator):
         if parameters["refObject"] == "ORG":
             refObjectLocation = [0, 0, 0]
         elif parameters["refObject"] == "CUR":
-            refObjectLocation = bpy.context.scene.cursor_location - objectLocation
+            refObjectLocation = bpy.context.scene.cursor.location - objectLocation
         else:
             refObjectLocation = self.calc.getEdgeReference(edge, edgeCenter, parameters["plane"])
 
@@ -1117,7 +1132,7 @@ class EdgeRoundifier(bpy.types.Operator):
             vi.select = True
             verticesForDeletion.append(vi)
 
-        bmesh.ops.delete(bm, geom = verticesForDeletion, context = 1)
+        bmesh.ops.delete(bm, geom = verticesForDeletion, context = 'EDGES')
         bmesh.update_edit_mesh(mesh, True)
         bpy.ops.object.mode_set(mode = 'OBJECT')
         bpy.ops.object.mode_set(mode = 'EDIT')
@@ -1182,7 +1197,7 @@ class EdgeRoundifier(bpy.types.Operator):
     def selectEdgesAfterRoundifier(self, context, edges):
         bpy.ops.object.mode_set(mode = 'OBJECT')
         bpy.ops.object.mode_set(mode = 'EDIT')
-        mesh = context.scene.objects.active.data
+        mesh = context.view_layer.objects.active.data
         bmnew = bmesh.new()
         bmnew.from_mesh(mesh)
         self.deselectEdges(bmnew)
@@ -1212,22 +1227,28 @@ class EdgeRoundifier(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return (context.scene.objects.active.type == 'MESH') and (context.scene.objects.active.mode == 'EDIT')
+        return (context.view_layer.objects.active.type == 'MESH') and (context.view_layer.objects.active.mode == 'EDIT')
     
 def draw_item(self, context):
     self.layout.operator_context = 'INVOKE_DEFAULT'
     self.layout.operator('mesh.edge_roundifier')
 
+classes = (EdgeWorksPanel,
+           EdgeRoundifier,
+           )
+
+reg_cls, unreg_cls = bpy.utils.register_classes_factory(classes)
+
+
+
 
 def register():
-    bpy.utils.register_class(EdgeRoundifier)
-    bpy.utils.register_class(EdgeWorksPanel)
+    reg_cls()
     bpy.types.VIEW3D_MT_edit_mesh_edges.append(draw_item)
 
 
 def unregister():
-    bpy.utils.unregister_class(EdgeRoundifier)
-    bpy.utils.unregister_class(EdgeWorksPanel)
+    unreg_cls()
     bpy.types.VIEW3D_MT_edit_mesh_edges.remove(draw_item)
 
 if __name__ == "__main__":
